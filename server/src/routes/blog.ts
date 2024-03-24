@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { Hono } from "hono";
 import { verify } from "hono/jwt";
+import { createPostInput, updatePostInput } from "@shawnswp/medium";
 
 export const bookRouter = new Hono<{
   Bindings: {
@@ -20,7 +21,7 @@ bookRouter.use(async (c, next) => {
     return c.json({ error: "unauthorized" });
   }
   console.log(jwt);
-  const token = jwt.split(" ")[0];
+  const token = jwt.split(" ")[1];
   const payload = await verify(token, c.env.JWT_SECRET);
   if (!payload) {
     c.status(401);
@@ -35,8 +36,14 @@ bookRouter.post("/", async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());
-  console.log("User ID FOUND " + userId);
+
   const body = await c.req.json();
+  const { success } = createPostInput.safeParse(body);
+  if (!success) {
+    c.status(400);
+    return c.json({ error: "invalid input" });
+  }
+
   const post = await prisma.post.create({
     data: {
       title: body.title,
@@ -56,6 +63,12 @@ bookRouter.put("/", async (c) => {
   }).$extends(withAccelerate());
 
   const body = await c.req.json();
+  const { success } = updatePostInput.safeParse(body);
+  if (!success) {
+    c.status(400);
+    return c.json({ error: "invalid input" });
+  }
+
   prisma.post.update({
     where: {
       id: body.id,
@@ -67,7 +80,7 @@ bookRouter.put("/", async (c) => {
     },
   });
 
-  return c.json(body);
+  return c.text("updated post");
 });
 
 bookRouter.get("bulk", async (c) => {
