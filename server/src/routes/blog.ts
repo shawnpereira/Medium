@@ -32,11 +32,10 @@ bookRouter.use(async (c, next) => {
 });
 
 bookRouter.post("/", async (c) => {
-  const userId = c.get("userId");
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());
-
+  const userId = c.get("userId");
   const body = await c.req.json();
   const { success } = createPostInput.safeParse(body);
   if (!success) {
