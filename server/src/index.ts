@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { userRouter } from "./routes/user";
 import { bookRouter } from "./routes/blog";
+import { cors } from "hono/cors";
 
 export const app = new Hono<{
   Bindings: {
@@ -9,6 +10,10 @@ export const app = new Hono<{
   };
 }>();
 
+// Enable CORS middleware
+app.use("/*", cors());
+
+// Register routes
 app.route("/api/v1/user", userRouter);
 app.route("/api/v1/book", bookRouter);
 
