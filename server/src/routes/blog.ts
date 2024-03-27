@@ -82,27 +82,58 @@ bookRouter.put("/", async (c) => {
   return c.text("updated post");
 });
 
-bookRouter.get("bulk", async (c) => {
+bookRouter.get("/bulk", async (c) => {
   const prisma = new PrismaClient({
-    datasourceUrl: c.env?.DATABASE_URL,
+    datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
+  const blogs = await prisma.post.findMany({
+    select: {
+      content: true,
+      title: true,
+      id: true,
+      author: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
 
-  const posts = await prisma.post.findMany({});
-
-  return c.json(posts);
+  return c.json({
+    blogs,
+  });
 });
 
 bookRouter.get("/:id", async (c) => {
   const id = c.req.param("id");
   const prisma = new PrismaClient({
-    datasourceUrl: c.env?.DATABASE_URL,
+    datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
 
-  const post = await prisma.post.findUnique({
-    where: {
-      id: id,
-    },
-  });
+  try {
+    const blog = await prisma.post.findFirst({
+      where: {
+        id: id,
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        author: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
 
-  return c.json(post);
+    return c.json({
+      blog,
+    });
+  } catch (e) {
+    c.status(411); // 4
+    return c.json({
+      message: "Error while fetching blog post",
+    });
+  }
 });

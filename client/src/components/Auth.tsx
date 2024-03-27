@@ -2,7 +2,7 @@ import { ChangeEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import axios from "axios";
-import { BACKEND_URL } from "../config";
+// import { BACKEND_URL } from "../config";
 
 export const Auth = ({ type }: { type: "signup" | "signin" }) => {
   const navigate = useNavigate();
@@ -18,19 +18,19 @@ export const Auth = ({ type }: { type: "signup" | "signin" }) => {
 
   async function sendRequest() {
     try {
-      console.log("BACKEND_URL:", BACKEND_URL);
+      // console.log("BACKEND_URL:", BACKEND_URL);
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/v1/user/${
           type === "signup" ? "signup" : "signin"
         }`,
         postInputs
       );
-      console.log("URL:", BACKEND_URL);
-      console.log("Response:", response.data);
+      // console.log("URL:", BACKEND_URL);
+      // console.log("Response:", response.data);
 
       const jwt = response.data;
       localStorage.setItem("token", jwt);
-      console.log("Token stored in localStorage.");
+      // console.log("Token stored in localStorage.");
       navigate("/blogs");
     } catch (e) {
       console.error("Error:", e);
